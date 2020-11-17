@@ -11,7 +11,7 @@ const secretsManager = new aws.SecretsManager({
   region: core.getInput('AWS_DEFAULT_REGION')
 })
 
-async function getSecretValue(secretsManager, secretName) {
+async function getSecretValue (secretsManager, secretName) {
   return secretsManager.getSecretValue({ SecretId: secretName }).promise()
 }
 
@@ -30,6 +30,10 @@ getSecretValue(secretsManager, secretName)
       const secretsAsEnv = Object.entries(parsedSecret)
         .map(([key, value]) => `${key}=${value}`)
         .join('\n')
+
+      core.info(`New env file ${outputPath}`)
+      core.info(secretsAsEnv)
+
       fs.writeFileSync(outputPath, secretsAsEnv)
 
       Object.entries(parsedSecret).forEach(([_key, value]) => {
