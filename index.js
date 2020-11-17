@@ -17,7 +17,7 @@ async function getSecretValue (secretsManager, secretName) {
 
 getSecretValue(secretsManager, secretName).then(resp => {
   const secretString = resp.SecretString
-  core.setSecret(secretString)
+  // core.setSecret(secretString)
 
   if (secretString == null) {
     core.warning(`${secretName} has no secret values`)
@@ -27,7 +27,7 @@ getSecretValue(secretsManager, secretName).then(resp => {
   try {
     const parsedSecret = JSON.parse(secretString)
     Object.entries(parsedSecret).forEach(([key, value]) => {
-      core.setSecret(value)
+      // core.setSecret(value)
       core.exportVariable(key, value)
     })
     if (outputPath) {
