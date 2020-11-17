@@ -11,38 +11,55 @@ const secretsManager = new aws.SecretsManager({
   region: core.getInput('AWS_DEFAULT_REGION')
 })
 
-async function getSecretValue (secretsManager, secretName) {
+async function getSecretValue(secretsManager, secretName) {
   return secretsManager.getSecretValue({ SecretId: secretName }).promise()
 }
 
-getSecretValue(secretsManager, secretName).then(resp => {
-  const secretString = resp.SecretString
-  core.setSecret(secretString)
+getSecretValue(secretsManager, secretName)
+  .then((resp) => {
+    const secretString = resp.SecretString
+    core.setSecret(secretString)
 
-  if (secretString == null) {
-    core.warning(`${secretName} has no secret values`)
-    return
-  }
-
-  try {
-    const parsedSecret = JSON.parse(secretString)
-    Object.entries(parsedSecret).forEach(([key, value]) => {
-      core.setSecret(value)
-      // core.exportVariable(key, value)
-    })
-    if (outputPath) {
-      const secretsAsEnv = Object.entries(parsedSecret).map(([key, value]) => `${key}=${value}`).join('\n')
-      fs.writeFileSync(outputPath, secretsAsEnv)
+    if (!secretString) {
+      core.error(`${secretName} has no secret values`)
+      return
     }
-  } catch (e) {
-    core.warning('Parsing asm secret is failed. Secret will be store in asm_secret')
-    // core.exportVariable('asm_secret', secretString)
-    if (outputPath) {
+
+    try {
+      const parsedSecret = JSON.parse(secretString)
+      const secretsAsEnv = Object.entries(parsedSecret)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('\n')
+      fs.writeFileSync(outputPath, secretsAsEnv)
+
+      Object.entries(parsedSecret).forEach(([_key, value]) => {
+        // Don't hide normal secret values from Github output.
+        if (
+          [
+            './',
+            '0',
+            '1',
+            'arityco',
+            'auth.arity.co',
+            'ci',
+            'dev',
+            'development',
+            'production',
+            'staging'
+          ].includes(value) || value.length < 5
+        ) return
+
+        core.setSecret(value)
+      })
+    } catch (e) {
+      core.warning(
+        'Parsing asm secret is failed. Secret will be store in asm_secret'
+      )
       fs.writeFileSync(outputPath, secretString)
     }
-  }
-}).catch(err => {
-  core.setFailed(err)
-})
+  })
+  .catch((err) => {
+    core.setFailed(err)
+  })
 
 exports.getSecretValue = getSecretValue
