@@ -17,7 +17,7 @@ async function getSecretValue (secretsManager, secretName) {
 
 getSecretValue(secretsManager, secretName).then(resp => {
   const secretString = resp.SecretString
-  // core.setSecret(secretString)
+  core.setSecret(secretString)
 
   if (secretString == null) {
     core.warning(`${secretName} has no secret values`)
@@ -27,8 +27,8 @@ getSecretValue(secretsManager, secretName).then(resp => {
   try {
     const parsedSecret = JSON.parse(secretString)
     Object.entries(parsedSecret).forEach(([key, value]) => {
-      // core.setSecret(value)
-      core.exportVariable(key, value)
+      core.setSecret(value)
+      // core.exportVariable(key, value)
     })
     if (outputPath) {
       const secretsAsEnv = Object.entries(parsedSecret).map(([key, value]) => `${key}=${value}`).join('\n')
@@ -36,7 +36,7 @@ getSecretValue(secretsManager, secretName).then(resp => {
     }
   } catch (e) {
     core.warning('Parsing asm secret is failed. Secret will be store in asm_secret')
-    core.exportVariable('asm_secret', secretString)
+    // core.exportVariable('asm_secret', secretString)
     if (outputPath) {
       fs.writeFileSync(outputPath, secretString)
     }
