@@ -4,6 +4,9 @@ const fs = require('fs')
 
 const outputPath = core.getInput('OUTPUT_PATH')
 const secretName = core.getInput('SECRET_NAME')
+const nonMaskedSecrets = new Set(
+  core.getMultilineInput('NON_MASKED_SECRETS').map((s) => s.toLowerCase())
+)
 
 const secretsManager = new aws.SecretsManager({
   accessKeyId: core.getInput('AWS_ACCESS_KEY_ID'),
@@ -36,25 +39,11 @@ getSecretValue(secretsManager, secretName)
 
       fs.writeFileSync(outputPath, secretsAsEnv)
 
-      Object.entries(parsedSecret).forEach(([_key, value]) => {
-        // Don't hide normal secret values from Github output.
-        if (
-          [
-            './',
-            '0',
-            '1',
-            'arityco',
-            'auth.arity.co',
-            'ci',
-            'dev',
-            'development',
-            'production',
-            'staging'
-          ].includes(value) || value.length < 5
-        ) return
-
-        core.setSecret(value)
-      })
+      Object.entries(parsedSecret)
+        .filter(([key]) => !nonMaskedSecrets.has(key.toLowerCase()))
+        .forEach(([_, value]) => {
+          core.setSecret(value)
+        })
     } catch (e) {
       core.warning(
         'Parsing asm secret is failed. Secret will be store in asm_secret'
