@@ -16,6 +16,9 @@ inputs:
   OUTPUT_PATH:
     description: 'Set output file where variables are write'
     required: true
+  NON_MASKED_SECRETS:
+    description: 'Keys of secrets not to add the github secret mask'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
