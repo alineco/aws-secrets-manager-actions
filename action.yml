@@ -17,7 +17,7 @@ inputs:
     description: 'Set output file where variables are write'
     required: true
   NON_MASKED_SECRETS:
-    description: 'Key of the secrets not to the secret mask of github'
+    description: 'Keys of secrets not to add the github secret mask'
     required: false
 runs:
   using: 'node12'
