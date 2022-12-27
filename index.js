@@ -35,7 +35,6 @@ getSecretValue(secretsManager, secretName)
         .join('\n')
 
       core.info(`New env file ${outputPath}`)
-      core.info(secretsAsEnv)
 
       fs.writeFileSync(outputPath, secretsAsEnv)
 
