@@ -18,6 +18,10 @@ async function getSecretValue (secretsManager, secretName) {
   return secretsManager.getSecretValue({ SecretId: secretName }).promise()
 }
 
+function shellEscape(str) {
+  return `'${str.replace(/'/g, `'\\''`)}'`
+}
+
 getSecretValue(secretsManager, secretName)
   .then((resp) => {
     const secretString = resp.SecretString
@@ -31,7 +35,7 @@ getSecretValue(secretsManager, secretName)
     try {
       const parsedSecret = JSON.parse(secretString)
       const secretsAsEnv = Object.entries(parsedSecret)
-        .map(([key, value]) => `${key}=${value}`)
+        .map(([key, value]) => `${key}=${shellEscape(value)}`)
         .join('\n')
 
       core.info(`New env file ${outputPath}`)
