@@ -1,7 +1,6 @@
 const core = require('@actions/core')
 const aws = require('aws-sdk')
 const fs = require('fs')
-const shellescape = require('shell-escape');
 
 const outputPath = core.getInput('OUTPUT_PATH')
 const secretName = core.getInput('SECRET_NAME')
